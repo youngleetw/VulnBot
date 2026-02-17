@@ -32,11 +32,24 @@ class OpenAIChat(ABC):
     )
     def chat(self, history: List) -> str:
         try:
-            response = self.client.chat.completions.create(
+            request_kwargs = dict(
                 model=self.model_name,
                 messages=history,
-                temperature=self.config.temperature,
             )
+            if self.config.temperature is not None:
+                request_kwargs["temperature"] = self.config.temperature
+
+            try:
+                response = self.client.chat.completions.create(**request_kwargs)
+            except Exception as e:
+                # Some models only support the default temperature.
+                err_text = str(e).lower()
+                if "temperature" in err_text and "default (1)" in err_text:
+                    request_kwargs.pop("temperature", None)
+                    response = self.client.chat.completions.create(**request_kwargs)
+                else:
+                    raise
+
             ans = response.choices[0].message.content
             return ans
         except (httpx.HTTPStatusError, httpx.ReadTimeout,

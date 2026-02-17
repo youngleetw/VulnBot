@@ -16,11 +16,7 @@ class WritePlan(BaseModel):
 
     def run(self, init_description) -> str:
         rsp = _chat(query=DeepPentestPrompt.write_plan, conversation_id=self.plan_chat_id, kb_name=Configs.kb_config.kb_name, kb_query=init_description)
-
-        match = re.search(r'<json>(.*?)</json>', rsp, re.DOTALL)
-        if match:
-            code = match.group(1)
-            return code
+        return extract_json_payload(rsp)
 
     def update(self, task_result, success_task, fail_task, init_description) -> str:
         rsp = _chat(
@@ -36,15 +32,39 @@ class WritePlan(BaseModel):
         )
         if rsp == "":
             return rsp
+        return extract_json_payload(rsp)
 
-        match = re.search(r'<json>(.*?)</json>', rsp, re.DOTALL)
-        if match:
-            code = match.group(1)
-            return code
+
+def extract_json_payload(rsp: str) -> str:
+    if not rsp:
+        return None
+    if isinstance(rsp, str) and rsp.startswith("**ERROR**"):
+        return None
+
+    # Preferred format from prompts.
+    match = re.search(r'<json>(.*?)</json>', rsp, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+
+    # Fallback for markdown fenced JSON.
+    fenced_json = re.search(r'```json\s*(.*?)\s*```', rsp, re.DOTALL)
+    if fenced_json:
+        return fenced_json.group(1).strip()
+
+    fenced_plain = re.search(r'```\s*(.*?)\s*```', rsp, re.DOTALL)
+    if fenced_plain:
+        return fenced_plain.group(1).strip()
+
+    # Last resort: return raw text and let parser validate.
+    return rsp.strip()
 
 
 def parse_tasks(response: str, current_plan: Plan):
-    response = json.loads(response)
+    if not response:
+        raise ValueError("empty planning response")
+
+    if isinstance(response, str):
+        response = json.loads(preprocess_json_string(response))
 
     tasks = import_tasks_from_json(current_plan.id, response)
 
@@ -61,6 +81,8 @@ def preprocess_json_string(json_str):
 def merge_tasks(response: str, current_plan: Plan):
 
     # Preprocess the input JSON string
+    if not response:
+        return current_plan
     processed_response = preprocess_json_string(response)
 
     response = json.loads(processed_response)

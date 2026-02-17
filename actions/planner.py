@@ -26,7 +26,15 @@ class Planner(BaseModel):
 
         logger.info(f"plan: {response}")
 
-        self.current_plan = parse_tasks(response, self.current_plan)
+        if response is None or response == "":
+            logger.error("plan generation failed: empty response from LLM")
+            return None
+
+        try:
+            self.current_plan = parse_tasks(response, self.current_plan)
+        except Exception as e:
+            logger.exception(f"failed to parse plan response: {e}")
+            return None
 
         next_task = self.next_task_details()
 
