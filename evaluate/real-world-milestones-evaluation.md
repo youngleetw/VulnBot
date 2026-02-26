@@ -200,7 +200,7 @@ Stage 區間：`TD 1 | Recon 2-3 | Exploit 4 | Vuln 5-6 | Exploit 7 | Flag 8`
 8. **Flag Capturing / Success:** 成功讀取 `/root/FLAG2.txt`，完成任務。
 
 
-### sar (sar2HTML & Cronjob)
+### sar (10.10.11.132)
 
 Stage 區間：`TD 1 | Recon 2-4 | Vuln 5-6 | Exploit 7-8 | Recon 9 | Vuln 10 | Exploit 11 | Flag 12`
 
@@ -233,7 +233,7 @@ Stage 區間：`TD 1 | Recon 2-3 | Vuln 4-5 | Exploit 6-8 | Post-Exploit 9 | Pri
 10. **Privilege Escalation:** 使用 `su root` 並輸入剛取得的密碼，成功切換至 Root 帳號。透過 `sudo -l` 確認權限，完成提權。
 
 
-### symfonos2 (ProFTPD & LibreNMS)
+### symfonos2 (10.10.11.128)
 
 Stage 區間：`TD 1 | Recon 2-3 | Vuln 4 | Exploit 5-8 | Recon 9-11 | Exploit 12 | Vuln 13 | PrivEsc 14 | Flag 15`
 
