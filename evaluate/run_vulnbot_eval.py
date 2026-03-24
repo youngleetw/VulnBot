@@ -408,7 +408,10 @@ def main() -> int:
         for i in range(args.run_count):
             job_idx += 1
             current_run_index = args.run_index + i
-            log_name = f"{args.level}_VM-{vm_id}_{current_run_index}.log"
+            if args.level == "in-vitro":
+                log_name = f"{args.level}_{args.category}_VM-{vm_id}_{current_run_index}.log"
+            else:
+                log_name = f"{args.level}_VM-{vm_id}_{current_run_index}.log"
             log_path = log_dir / log_name
 
             with log_path.open("w", encoding="utf-8") as log_file:
